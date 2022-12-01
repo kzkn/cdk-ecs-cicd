@@ -1,9 +1,10 @@
-
-import * as cdk from '@aws-cdk/core';
-import * as ec2 from '@aws-cdk/aws-ec2';
-import * as ecs from '@aws-cdk/aws-ecs';
-import * as elbv2 from '@aws-cdk/aws-elasticloadbalancingv2';
+import { Construct } from 'constructs';
+import * as cdk from 'aws-cdk-lib';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import path = require('path');
+import { Schedule } from 'aws-cdk-lib/aws-events';
 
 export interface AppStackProps extends cdk.StackProps {
     vpc: ec2.Vpc;
@@ -14,7 +15,7 @@ export interface AppStackProps extends cdk.StackProps {
 
 export class AppStack extends cdk.Stack {
 
-    constructor(scope: cdk.Construct, id: string, props: AppStackProps) {
+    constructor(scope: Construct, id: string, props: AppStackProps) {
         super(scope, id, props);
 
         // Create a task definition with 2 containers and CloudWatch Logs
@@ -64,16 +65,12 @@ export class AppStack extends cdk.Stack {
 
         scaling.scaleOnSchedule('ScheduleScalingUp', {
             minCapacity: 2,
-            schedule: {
-                expressionString: "cron(0 0 0/2 ? * *)"
-            }
+            schedule: Schedule.expression("cron(0 0 0/2 ? * *)")
         })
 
         scaling.scaleOnSchedule('ScheduleScalingDown', {
             minCapacity: 1,
-            schedule: {
-                expressionString: "cron(0 0 1/2 ? * *)"
-            }
+            schedule: Schedule.expression("cron(0 0 1/2 ? * *)")
         })
 
         // Add public ALB loadbalancer targetting service

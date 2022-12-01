@@ -1,9 +1,11 @@
-import * as cdk from '@aws-cdk/core';
-import * as iam from '@aws-cdk/aws-iam';
-import * as ecr from '@aws-cdk/aws-ecr';
-import * as codebuild from '@aws-cdk/aws-codebuild';
-import * as codepipeline from '@aws-cdk/aws-codepipeline';
-import * as codepipeline_actions from '@aws-cdk/aws-codepipeline-actions';
+// TODO: run this
+import { Construct } from 'constructs';
+import * as cdk from 'aws-cdk-lib';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as codebuild from 'aws-cdk-lib/aws-codebuild';
+import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
+import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import { PipelineContainerImage } from "./pipeline-container-image";
 
 import { githubOwner, repoName, awsSecretsGitHubTokenName, gitProdBranch, ssmImageTagParamName, stagingValidationEmail } from '../config'
@@ -23,7 +25,7 @@ export class StagingProdPipelineStack extends cdk.Stack {
     public readonly nginxBuiltImageStaging: PipelineContainerImage;
     public readonly nginxBuiltImageProd: PipelineContainerImage;
   
-    constructor(scope: cdk.Construct, id: string, props: StagingProdPipelineStackProps) {
+    constructor(scope: Construct, id: string, props: StagingProdPipelineStackProps) {
         super(scope, id, {
           ...props,
           //autoDeploy: false,
@@ -50,9 +52,6 @@ export class StagingProdPipelineStack extends cdk.Stack {
         });
 
         const cdkBuild = new codebuild.PipelineProject(this, 'CdkBuildProject', {
-            environment: {
-              buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_14_1,
-            },
             buildSpec: codebuild.BuildSpec.fromObject({
               version: '0.2',
               phases: {
@@ -65,8 +64,8 @@ export class StagingProdPipelineStack extends cdk.Stack {
                 build: {
                   commands: [
                     'npm run build',
-                    'npm run cdk synth StagingAppStack -- -o .',
-                    'npm run cdk synth ProdAppStack -- -o .',
+                    'npm run cdk synth -o . StagingAppStack',
+                    'npm run cdk synth -o . ProdAppStack',
                     'IMAGE_TAG=`aws ssm get-parameter --name "' + ssmImageTagParamName + '" --output text --query Parameter.Value`',
                     `printf '{ "imageTag": "'$IMAGE_TAG'" }' > imageTag.json`,
                     'ls',
@@ -162,4 +161,4 @@ export class StagingProdPipelineStack extends cdk.Stack {
           });
     
     }
-}    
+}

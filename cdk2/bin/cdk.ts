@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
-import * as cdk from '@aws-cdk/core';
-
+import * as cdk from 'aws-cdk-lib';
 import { ClusterStack } from '../lib/cluster-stack';
 import { AppStack } from '../lib/app-stack';
 import { DevPipelineStack } from '../lib/dev-pipeline-stack';
@@ -11,20 +10,20 @@ const app = new cdk.App();
 
 // Cluster Stacks - maxAZs of 3 is best practice, but make sure you have no EIP limitations (5 is default)
 const devClusterStack = new ClusterStack(app, 'DevCluster', {
-    cidr: '10.1.0.0/20',
+    ipAddresses: '10.1.0.0/20',
     maxAZs: 2
 });
-cdk.Tag.add(devClusterStack, 'environment', 'dev');
+cdk.Tags.of(devClusterStack).add('environment', 'dev');
 
 const prodClusterStack = new ClusterStack(app, 'ProdCluster', {
-    cidr: '10.3.0.0/20',
+    ipAddresses: '10.3.0.0/20',
     maxAZs: 2
 });
-cdk.Tag.add(prodClusterStack, 'environment', 'prod');
+cdk.Tags.of(prodClusterStack).add('environment', 'prod');
 
 // CodePipeline stacks
 const devPipelineStack = new DevPipelineStack(app, 'DevPipelineStack');
-cdk.Tag.add(devPipelineStack, 'environment', 'dev');
+cdk.Tags.of(devPipelineStack).add('environment', 'dev');
 
 
 const stagingProdPipelineStack = new StagingProdPipelineStack(app, 'StagingProdPipelineStack', {
@@ -32,7 +31,7 @@ const stagingProdPipelineStack = new StagingProdPipelineStack(app, 'StagingProdP
     nginxRepository: devPipelineStack.nginxRepository,
     imageTag: devPipelineStack.imageTag
 });
-cdk.Tag.add(stagingProdPipelineStack, 'environment', 'prod');
+cdk.Tags.of(stagingProdPipelineStack).add('environment', 'prod');
 
 // DevAppStack
 const devAppStack = new AppStack(app, 'DevAppStack', {
@@ -42,7 +41,7 @@ const devAppStack = new AppStack(app, 'DevAppStack', {
     appImage: devPipelineStack.appBuiltImage,
     nginxImage: devPipelineStack.nginxBuiltImage,
 });
-cdk.Tag.add(devAppStack, 'environment', 'dev');
+cdk.Tags.of(devAppStack).add('environment', 'dev');
 
 // StagingAppStack
 const stagingAppStack = new AppStack(app, 'StagingAppStack', {
@@ -52,7 +51,7 @@ const stagingAppStack = new AppStack(app, 'StagingAppStack', {
     appImage: stagingProdPipelineStack.appBuiltImageStaging,
     nginxImage: stagingProdPipelineStack.nginxBuiltImageStaging,
 });
-cdk.Tag.add(stagingAppStack, 'environment', 'staging');
+cdk.Tags.of(stagingAppStack).add('environment', 'staging');
 
 // ProdAppStack
 const prodAppStack = new AppStack(app, 'ProdAppStack', {
@@ -62,5 +61,4 @@ const prodAppStack = new AppStack(app, 'ProdAppStack', {
     appImage: stagingProdPipelineStack.appBuiltImageProd,
     nginxImage: stagingProdPipelineStack.nginxBuiltImageProd,
 });
-cdk.Tag.add(prodAppStack, 'environment', 'prod');
-
+cdk.Tags.of(prodAppStack).add('environment', 'prod');
