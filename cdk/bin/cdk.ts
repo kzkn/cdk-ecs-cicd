@@ -22,7 +22,9 @@ const prodClusterStack = new ClusterStack(app, 'ProdCluster', {
 cdk.Tags.of(prodClusterStack).add('environment', 'prod');
 
 // CodePipeline stacks
-const devPipelineStack = new DevPipelineStack(app, 'DevPipelineStack');
+const devPipelineStack = new DevPipelineStack(app, 'DevPipelineStack', {
+  vpc: devClusterStack.vpc
+});
 cdk.Tags.of(devPipelineStack).add('environment', 'dev');
 
 
