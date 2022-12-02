@@ -62,7 +62,7 @@ export class AppStack extends cdk.Stack {
             cluster: props.cluster,
             taskDefinition
         });
-        dbInstance.connections.allowToDefaultPort(service)
+        dbInstance.connections.allowDefaultPortFrom(service)
 
         // Setup autoscaling
         const scaling = service.autoScaleTaskCount({ maxCapacity: 4 });
