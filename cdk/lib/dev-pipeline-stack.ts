@@ -2,20 +2,20 @@ import { Construct } from 'constructs';
 import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 
-
-import { PipelineContainerImage } from "./pipeline-container-image";
 import { githubOwner, repoName, awsSecretsGitHubTokenName, gitDevBranch, ssmImageTagParamName } from '../config'
 
 export class DevPipelineStack extends cdk.Stack {
   public readonly appRepository: ecr.Repository;
-  public readonly appBuiltImage: PipelineContainerImage;
+  public readonly appBuiltImage: ecs.TagParameterContainerImage;
 
   public readonly nginxRepository: ecr.Repository;
-  public readonly nginxBuiltImage: PipelineContainerImage;
+  // public readonly nginxBuiltImage: PipelineContainerImage;
+  public readonly nginxBuiltImage: ecs.TagParameterContainerImage;
 
   public readonly imageTag: string;
 
@@ -26,10 +26,12 @@ export class DevPipelineStack extends cdk.Stack {
     });
 
     this.appRepository = new ecr.Repository(this, 'AppEcrRepo');
-    this.appBuiltImage = new PipelineContainerImage(this.appRepository);
+    //this.appBuiltImage = new PipelineContainerImage(this.appRepository);
+    this.appBuiltImage = new ecs.TagParameterContainerImage(this.appRepository);
 
     this.nginxRepository = new ecr.Repository(this, 'NginxEcrRepo');
-    this.nginxBuiltImage = new PipelineContainerImage(this.nginxRepository);
+    //this.nginxBuiltImage = new PipelineContainerImage(this.nginxRepository);
+    this.nginxBuiltImage = new ecs.TagParameterContainerImage(this.nginxRepository);
 
     const sourceOutput = new codepipeline.Artifact();
     const sourceAction = new codepipeline_actions.GitHubSourceAction({
@@ -63,7 +65,6 @@ export class DevPipelineStack extends cdk.Stack {
                 'docker push $APP_REPOSITORY_URI:$CODEBUILD_RESOLVED_SOURCE_VERSION',
                 'docker push $NGINX_REPOSITORY_URI:$CODEBUILD_RESOLVED_SOURCE_VERSION',
                 `printf '{ "imageTag": "'$CODEBUILD_RESOLVED_SOURCE_VERSION'" }' > imageTag.json`,
-                'aws ssm put-parameter --name "' + ssmImageTagParamName + '" --value $CODEBUILD_RESOLVED_SOURCE_VERSION --type String --overwrite'
               ],
             },
           },
@@ -80,12 +81,6 @@ export class DevPipelineStack extends cdk.Stack {
           },
         },
       });
-      dockerBuild.addToRolePolicy(new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ['ssm:PutParameter'],
-          resources: ['arn:aws:ssm:*:*:parameter/' + ssmImageTagParamName]
-        })
-      );
       this.appRepository.grantPullPush(dockerBuild);
       this.nginxRepository.grantPullPush(dockerBuild);
 
@@ -157,8 +152,8 @@ export class DevPipelineStack extends cdk.Stack {
                 templatePath: cdkBuildOutput.atPath('DevAppStack.template.json'),
                 adminPermissions: true,
                 parameterOverrides: {
-                  [this.appBuiltImage.paramName]: dockerBuildOutput.getParam('imageTag.json', 'imageTag'),
-                  [this.nginxBuiltImage.paramName]: dockerBuildOutput.getParam('imageTag.json', 'imageTag'),
+                  [this.appBuiltImage.tagParameterName]: dockerBuildOutput.getParam('imageTag.json', 'imageTag'),
+                  [this.nginxBuiltImage.tagParameterName]: dockerBuildOutput.getParam('imageTag.json', 'imageTag'),
                 },
                 extraInputs: [dockerBuildOutput],
               }),
@@ -169,4 +164,4 @@ export class DevPipelineStack extends cdk.Stack {
    
       this.imageTag = dockerBuildOutput.getParam('imageTag.json', 'imageTag');
     }
-  }
+}
