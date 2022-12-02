@@ -90,22 +90,13 @@ export class DevPipelineStack extends cdk.Stack {
       this.nginxRepository.grantPullPush(dockerBuild);
 
       const cdkBuild = new codebuild.PipelineProject(this, 'CdkBuildProject', {
-        environment: {
-          buildImage: codebuild.LinuxBuildImage.STANDARD_6_0
-        },
         buildSpec: codebuild.BuildSpec.fromObject({
           version: '0.2',
           phases: {
-            install: {
-              commands: [
-                'cd cdk',
-                'npm install',
-              ],
-            },
             build: {
               commands: [
-                'npm run build',
-                'npm run cdk synth -o . DevAppStack'
+                'cd cdk',
+                'npx cdk synth -o . DevAppStack'
               ],
             },
           },
