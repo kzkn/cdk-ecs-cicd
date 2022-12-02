@@ -7,14 +7,13 @@ import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 
-import { githubOwner, repoName, awsSecretsGitHubTokenName, gitDevBranch, ssmImageTagParamName } from '../config'
+import { githubOwner, repoName, awsSecretsGitHubTokenName, gitDevBranch } from '../config'
 
 export class DevPipelineStack extends cdk.Stack {
   public readonly appRepository: ecr.Repository;
   public readonly appBuiltImage: ecs.TagParameterContainerImage;
 
   public readonly nginxRepository: ecr.Repository;
-  // public readonly nginxBuiltImage: PipelineContainerImage;
   public readonly nginxBuiltImage: ecs.TagParameterContainerImage;
 
   public readonly imageTag: string;
@@ -26,11 +25,10 @@ export class DevPipelineStack extends cdk.Stack {
     });
 
     this.appRepository = new ecr.Repository(this, 'AppEcrRepo');
-    //this.appBuiltImage = new PipelineContainerImage(this.appRepository);
     this.appBuiltImage = new ecs.TagParameterContainerImage(this.appRepository);
 
     this.nginxRepository = new ecr.Repository(this, 'NginxEcrRepo');
-    //this.nginxBuiltImage = new PipelineContainerImage(this.nginxRepository);
+
     this.nginxBuiltImage = new ecs.TagParameterContainerImage(this.nginxRepository);
 
     const sourceOutput = new codepipeline.Artifact();
