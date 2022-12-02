@@ -28,7 +28,6 @@ export class DevPipelineStack extends cdk.Stack {
     this.appBuiltImage = new ecs.TagParameterContainerImage(this.appRepository);
 
     this.nginxRepository = new ecr.Repository(this, 'NginxEcrRepo');
-
     this.nginxBuiltImage = new ecs.TagParameterContainerImage(this.nginxRepository);
 
     const sourceOutput = new codepipeline.Artifact();
@@ -44,6 +43,7 @@ export class DevPipelineStack extends cdk.Stack {
 
     const dockerBuild = new codebuild.PipelineProject(this, 'DockerCodeBuildProject', {
         environment: {
+          buildImage: codebuild.LinuxBuildImage.STANDARD_6_0,
           privileged: true,
         },
         cache: codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
