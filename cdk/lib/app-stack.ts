@@ -83,11 +83,18 @@ export class AppStack extends cdk.Stack {
             port: 80
         });
 
-        listener.addTargets('DefaultTarget', {
+        const targetGroup = listener.addTargets('DefaultTarget', {
             port: 80,
             protocol: elbv2.ApplicationProtocol.HTTP,
-            targets: [service]
+            targets: [service],
+            healthCheck: {
+                interval: cdk.Duration.seconds(10),
+                healthyThresholdCount: 3,
+                unhealthyThresholdCount: 2,
+                timeout: cdk.Duration.seconds(5),
+            }
         });
+        targetGroup.setAttribute('deregistration_delay.timeout_seconds', '10')
 
         // CfnOutput the DNS where you can access your service
         new cdk.CfnOutput(this, 'LoadBalancerDNS', { value: lb.loadBalancerDnsName });
