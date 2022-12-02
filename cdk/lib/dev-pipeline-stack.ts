@@ -96,9 +96,14 @@ export class DevPipelineStack extends cdk.Stack {
         buildSpec: codebuild.BuildSpec.fromObject({
           version: '0.2',
           phases: {
-            build: {
+            install: {
               commands: [
                 'cd cdk',
+                'npm ci'
+              ]
+            },
+            build: {
+              commands: [
                 'npx cdk synth -o . DevAppStack'
               ],
             },
