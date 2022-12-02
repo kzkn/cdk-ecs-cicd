@@ -13,9 +13,6 @@ export class DevPipelineStack extends cdk.Stack {
   public readonly appRepository: ecr.Repository;
   public readonly appBuiltImage: ecs.TagParameterContainerImage;
 
-  public readonly nginxRepository: ecr.Repository;
-  public readonly nginxBuiltImage: ecs.TagParameterContainerImage;
-
   public readonly imageTag: string;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -26,10 +23,6 @@ export class DevPipelineStack extends cdk.Stack {
 
     this.appRepository = new ecr.Repository(this, 'AppEcrRepo');
     this.appBuiltImage = new ecs.TagParameterContainerImage(this.appRepository);
-
-    this.nginxRepository = new ecr.Repository(this, 'NginxEcrRepo');
-
-    this.nginxBuiltImage = new ecs.TagParameterContainerImage(this.nginxRepository);
 
     const sourceOutput = new codepipeline.Artifact();
     const sourceAction = new codepipeline_actions.GitHubSourceAction({
@@ -55,14 +48,12 @@ export class DevPipelineStack extends cdk.Stack {
             },
             build: {
               commands:[
-                'docker build -t $APP_REPOSITORY_URI:$CODEBUILD_RESOLVED_SOURCE_VERSION app',
-                'docker build -t $NGINX_REPOSITORY_URI:$CODEBUILD_RESOLVED_SOURCE_VERSION nginx'
+                'DOCKER_BUILDKIT=1 docker build -t $APP_REPOSITORY_URI:$CODEBUILD_RESOLVED_SOURCE_VERSION app',
               ]
             },
             post_build: {
               commands: [
                 'docker push $APP_REPOSITORY_URI:$CODEBUILD_RESOLVED_SOURCE_VERSION',
-                'docker push $NGINX_REPOSITORY_URI:$CODEBUILD_RESOLVED_SOURCE_VERSION',
                 `printf '{ "imageTag": "'$CODEBUILD_RESOLVED_SOURCE_VERSION'" }' > imageTag.json`,
               ],
             },
@@ -75,13 +66,9 @@ export class DevPipelineStack extends cdk.Stack {
           'APP_REPOSITORY_URI': {
             value: this.appRepository.repositoryUri,
           },
-          'NGINX_REPOSITORY_URI': {
-            value: this.nginxRepository.repositoryUri,
-          },
         },
       });
       this.appRepository.grantPullPush(dockerBuild);
-      this.nginxRepository.grantPullPush(dockerBuild);
 
       const cdkBuild = new codebuild.PipelineProject(this, 'CdkBuildProject', {
         environment: {
@@ -152,7 +139,6 @@ export class DevPipelineStack extends cdk.Stack {
                 adminPermissions: true,
                 parameterOverrides: {
                   [this.appBuiltImage.tagParameterName]: dockerBuildOutput.getParam('imageTag.json', 'imageTag'),
-                  [this.nginxBuiltImage.tagParameterName]: dockerBuildOutput.getParam('imageTag.json', 'imageTag'),
                 },
                 extraInputs: [dockerBuildOutput],
               }),

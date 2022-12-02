@@ -3,6 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as rds from 'aws-cdk-lib/aws-rds';
 import path = require('path');
 import { Schedule } from 'aws-cdk-lib/aws-events';
 
@@ -10,13 +11,26 @@ export interface AppStackProps extends cdk.StackProps {
     vpc: ec2.Vpc;
     cluster: ecs.Cluster;
     appImage?: ecs.ContainerImage;
-    nginxImage?: ecs.ContainerImage;
 }
 
 export class AppStack extends cdk.Stack {
 
     constructor(scope: Construct, id: string, props: AppStackProps) {
         super(scope, id, props);
+
+        const { vpc } = props
+        const securityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, 'DefaultSecurityGroup', vpc.vpcDefaultSecurityGroup)
+        const dbCreds = new rds.DatabaseSecret(this, 'DatabaseCredentials', {
+            secretName: 'rds-credentials',
+            username: 'postgres',
+        })
+        const dbInstance = new rds.DatabaseInstance(this, 'Database', {
+            engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_14_4 }),
+            credentials: rds.Credentials.fromSecret(dbCreds),
+            instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO),
+            vpc,
+            securityGroups: [securityGroup]
+        })
 
         // Create a task definition with 2 containers and CloudWatch Logs
         const taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDef', {
@@ -34,20 +48,16 @@ export class AppStack extends cdk.Stack {
  
         const appContainer = taskDefinition.addContainer("app", {
             image: appImage,
-            logging: appLogging
+            logging: appLogging,
+            environment: {
+                DATABASE_HOST: dbInstance.dbInstanceEndpointAddress,
+            },
+            secrets: {
+                DATABASE_USERNAME: ecs.Secret.fromSecretsManager(dbCreds, 'username'),
+                DATABASE_PASSWORD: ecs.Secret.fromSecretsManager(dbCreds, 'password'),
+            }
         });
-        appContainer.addPortMappings({ containerPort: 3000 });
-
-        // Add nginx container 
-        const nginxLogging = new ecs.AwsLogDriver({
-            streamPrefix: "nginx",
-        });
-        const nginxImage = props.nginxImage || new ecs.AssetImage(path.join(__dirname, '../..', 'nginx'));
-        const nginxContainer = taskDefinition.addContainer("nginx", {
-            image: nginxImage,
-            logging: nginxLogging
-        });
-        nginxContainer.addPortMappings({ containerPort: 80 });
+        appContainer.addPortMappings({ containerPort: 80 });
 
         // Instantiate Fargate Service with cluster and images
         const service = new ecs.FargateService(this, 'Service', {
@@ -75,7 +85,7 @@ export class AppStack extends cdk.Stack {
 
         // Add public ALB loadbalancer targetting service
         const lb = new elbv2.ApplicationLoadBalancer(this, 'LB', {
-            vpc: props.vpc,
+            vpc,
             internetFacing: true
         });
 

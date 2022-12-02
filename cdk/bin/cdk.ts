@@ -26,39 +26,38 @@ const devPipelineStack = new DevPipelineStack(app, 'DevPipelineStack');
 cdk.Tags.of(devPipelineStack).add('environment', 'dev');
 
 
-const stagingProdPipelineStack = new StagingProdPipelineStack(app, 'StagingProdPipelineStack', {
-    appRepository: devPipelineStack.appRepository,
-    nginxRepository: devPipelineStack.nginxRepository,
-    imageTag: devPipelineStack.imageTag
-});
-cdk.Tags.of(stagingProdPipelineStack).add('environment', 'prod');
+// const stagingProdPipelineStack = new StagingProdPipelineStack(app, 'StagingProdPipelineStack', {
+//     appRepository: devPipelineStack.appRepository,
+//     nginxRepository: devPipelineStack.nginxRepository,
+//     imageTag: devPipelineStack.imageTag
+// });
+// cdk.Tags.of(stagingProdPipelineStack).add('environment', 'prod');
 
 // DevAppStack
 const devAppStack = new AppStack(app, 'DevAppStack', {
     vpc: devClusterStack.vpc,
     cluster: devClusterStack.cluster,
     //autoDeploy: false,
-    appImage: devPipelineStack.appBuiltImage,
-    nginxImage: devPipelineStack.nginxBuiltImage,
+    appImage: devPipelineStack.appBuiltImage
 });
 cdk.Tags.of(devAppStack).add('environment', 'dev');
 
 // StagingAppStack
-const stagingAppStack = new AppStack(app, 'StagingAppStack', {
-    vpc: prodClusterStack.vpc,
-    cluster: prodClusterStack.cluster,
-    //autoDeploy: false,
-    appImage: stagingProdPipelineStack.appBuiltImageStaging,
-    nginxImage: stagingProdPipelineStack.nginxBuiltImageStaging,
-});
-cdk.Tags.of(stagingAppStack).add('environment', 'staging');
+// const stagingAppStack = new AppStack(app, 'StagingAppStack', {
+//     vpc: prodClusterStack.vpc,
+//     cluster: prodClusterStack.cluster,
+//     //autoDeploy: false,
+//     appImage: stagingProdPipelineStack.appBuiltImageStaging,
+//     nginxImage: stagingProdPipelineStack.nginxBuiltImageStaging,
+// });
+// cdk.Tags.of(stagingAppStack).add('environment', 'staging');
 
 // ProdAppStack
-const prodAppStack = new AppStack(app, 'ProdAppStack', {
-    vpc: prodClusterStack.vpc,
-    cluster: prodClusterStack.cluster,
-    //autoDeploy: false,
-    appImage: stagingProdPipelineStack.appBuiltImageProd,
-    nginxImage: stagingProdPipelineStack.nginxBuiltImageProd,
-});
-cdk.Tags.of(prodAppStack).add('environment', 'prod');
+// const prodAppStack = new AppStack(app, 'ProdAppStack', {
+//     vpc: prodClusterStack.vpc,
+//     cluster: prodClusterStack.cluster,
+//     //autoDeploy: false,
+//     appImage: stagingProdPipelineStack.appBuiltImageProd,
+//     nginxImage: stagingProdPipelineStack.nginxBuiltImageProd,
+// });
+// cdk.Tags.of(prodAppStack).add('environment', 'prod');
