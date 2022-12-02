@@ -112,7 +112,7 @@ export class DevPipelineStack extends cdk.Stack {
         })      
       );
 
-    const release = new codebuild.PipelineProject(this, 'DockerCodeBuildProject', {
+    const release = new codebuild.PipelineProject(this, 'ReleaseProject', {
         cache: codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
         buildSpec: codebuild.BuildSpec.fromObject({
           version: '0.2',
