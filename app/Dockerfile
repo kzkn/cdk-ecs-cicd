@@ -41,7 +41,7 @@ RUN mkdir -p tmp/pids
 RUN curl https://get.volta.sh | bash
 ENV VOLTA_HOME /root/.volta
 ENV PATH $VOLTA_HOME/bin:/usr/local/bin:$PATH
-RUN volta install node@${NODE_VERSION} yarn
+RUN volta install node@${NODE_VERSION} yarn@^1
 
 #######################################################################
 
