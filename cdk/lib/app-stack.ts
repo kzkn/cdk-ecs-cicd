@@ -19,7 +19,6 @@ export class AppStack extends cdk.Stack {
         super(scope, id, props);
 
         const { vpc } = props
-        const securityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, 'DefaultSecurityGroup', vpc.vpcDefaultSecurityGroup)
         const dbCreds = new rds.DatabaseSecret(this, 'DatabaseCredentials', {
             secretName: 'rds-credentials',
             username: 'postgres',
@@ -29,7 +28,6 @@ export class AppStack extends cdk.Stack {
             credentials: rds.Credentials.fromSecret(dbCreds),
             instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO),
             vpc,
-            securityGroups: [securityGroup]
         })
 
         // Create a task definition with 2 containers and CloudWatch Logs
@@ -64,6 +62,7 @@ export class AppStack extends cdk.Stack {
             cluster: props.cluster,
             taskDefinition
         });
+        dbInstance.connections.allowToDefaultPort(service)
 
         // Setup autoscaling
         const scaling = service.autoScaleTaskCount({ maxCapacity: 4 });
