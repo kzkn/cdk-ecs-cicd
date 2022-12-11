@@ -10,14 +10,14 @@ const app = new cdk.App();
 
 // Cluster Stacks - maxAZs of 3 is best practice, but make sure you have no EIP limitations (5 is default)
 const devClusterStack = new ClusterStack(app, 'DevCluster', {
-    ipAddresses: '10.1.0.0/20',
-    maxAZs: 2
+  ipAddresses: '10.1.0.0/20',
+  maxAZs: 2
 });
 cdk.Tags.of(devClusterStack).add('environment', 'dev');
 
 const prodClusterStack = new ClusterStack(app, 'ProdCluster', {
-    ipAddresses: '10.3.0.0/20',
-    maxAZs: 2
+  ipAddresses: '10.3.0.0/20',
+  maxAZs: 2
 });
 cdk.Tags.of(prodClusterStack).add('environment', 'prod');
 
@@ -37,10 +37,10 @@ cdk.Tags.of(devPipelineStack).add('environment', 'dev');
 
 // DevAppStack
 const devAppStack = new AppStack(app, 'DevAppStack', {
-    vpc: devClusterStack.vpc,
-    cluster: devClusterStack.cluster,
-    //autoDeploy: false,
-    appImage: devPipelineStack.appBuiltImage
+  vpc: devClusterStack.vpc,
+  cluster: devClusterStack.cluster,
+  //autoDeploy: false,
+  appImage: devPipelineStack.appBuiltImage
 });
 cdk.Tags.of(devAppStack).add('environment', 'dev');
 
