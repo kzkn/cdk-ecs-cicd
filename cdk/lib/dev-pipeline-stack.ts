@@ -1,4 +1,3 @@
-import * as path from 'path';
 import { Construct } from 'constructs';
 import * as cdk from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -49,7 +48,7 @@ export class DevPipelineStack extends cdk.Stack {
         privileged: true,
       },
       cache: codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
-      buildSpec: codebuild.BuildSpec.fromSourceFilename(path.join(__dirname, './buildspec_image_build.yml')),
+      buildSpec: codebuild.BuildSpec.fromSourceFilename('./cdk/lib/buildspec_image_build.yml'),
       environmentVariables: {
         'APP_REPOSITORY_URI': {
           value: appRepository.repositoryUri,
@@ -62,7 +61,7 @@ export class DevPipelineStack extends cdk.Stack {
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_6_0
       },
-      buildSpec: codebuild.BuildSpec.fromSourceFilename(path.join(__dirname, './buildspec_cdk_build.yml')),
+      buildSpec: codebuild.BuildSpec.fromSourceFilename('./cdk/lib/buildspec_cdk_build.yml'),
     })
     cdkBuild.addToRolePolicy(new iam.PolicyStatement(
       {
@@ -74,7 +73,7 @@ export class DevPipelineStack extends cdk.Stack {
 
     const preDeploy = new codebuild.PipelineProject(this, 'PreDeploy', {
       cache: codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
-      buildSpec: codebuild.BuildSpec.fromSourceFilename(path.join(__dirname, './buildspec_predeploy.yml')),
+      buildSpec: codebuild.BuildSpec.fromSourceFilename('./cdk/lib/buildspec_predeploy.yml'),
       environmentVariables: {
         APP_REPOSITORY_URI: {
           value: appRepository.repositoryUri,
