@@ -61,7 +61,7 @@ export class DevPipelineStack extends cdk.Stack {
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_6_0
       },
-      // TODO: cache https://stackoverflow.com/a/60355056
+      cache: codebuild.Cache.local(codebuild.LocalCacheMode.CUSTOM),
       buildSpec: codebuild.BuildSpec.fromSourceFilename('./cdk/lib/buildspec_cdk_build.yml'),
     })
     cdkBuild.addToRolePolicy(new iam.PolicyStatement(
