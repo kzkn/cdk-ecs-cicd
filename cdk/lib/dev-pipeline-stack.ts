@@ -61,6 +61,7 @@ export class DevPipelineStack extends cdk.Stack {
       environment: {
         buildImage: codebuild.LinuxBuildImage.STANDARD_6_0
       },
+      // TODO: cache https://stackoverflow.com/a/60355056
       buildSpec: codebuild.BuildSpec.fromSourceFilename('./cdk/lib/buildspec_cdk_build.yml'),
     })
     cdkBuild.addToRolePolicy(new iam.PolicyStatement(
@@ -72,6 +73,9 @@ export class DevPipelineStack extends cdk.Stack {
     )
 
     const preDeploy = new codebuild.PipelineProject(this, 'PreDeploy', {
+      environment: {
+        privileged: true,
+      },
       cache: codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
       buildSpec: codebuild.BuildSpec.fromSourceFilename('./cdk/lib/buildspec_predeploy.yml'),
       environmentVariables: {
