@@ -15,13 +15,13 @@ import { githubOwner, repoName, awsSecretsGitHubTokenName, gitDevBranch } from '
 export interface DevPipelineStackProps extends cdk.StackProps {
   vpc: ec2.Vpc;
   dbInstance: rds.DatabaseInstance;
-  repository: ecr.IRepository;
-  service: ecs.FargateService;
+  // repository: ecr.IRepository;
+  // service: ecs.FargateService;
 }
 
 export class DevPipelineStack extends cdk.Stack {
   // public readonly appRepository: ecr.Repository;
-  // public readonly appBuiltImage: ecs.TagParameterContainerImage;
+  public readonly appBuiltImage: ecs.TagParameterContainerImage;
   // public readonly imageTag: string;
 
   constructor(scope: Construct, id: string, props: DevPipelineStackProps) {
@@ -30,8 +30,8 @@ export class DevPipelineStack extends cdk.Stack {
       //autoDeploy: false,
     });
 
-    // this.appRepository = new ecr.Repository(this, 'AppEcrRepo');
-    // this.appBuiltImage = new ecs.TagParameterContainerImage(this.appRepository);
+    const appRepository = new ecr.Repository(this, 'AppEcrRepo');
+    this.appBuiltImage = new ecs.TagParameterContainerImage(appRepository);
 
     const sourceOutput = new codepipeline.Artifact();
     const sourceAction = new codepipeline_actions.GitHubSourceAction({
@@ -52,26 +52,41 @@ export class DevPipelineStack extends cdk.Stack {
       buildSpec: codebuild.BuildSpec.fromSourceFilename(path.join(__dirname, './buildspec_image_build.yml')),
       environmentVariables: {
         'APP_REPOSITORY_URI': {
-          value: props.repository.repositoryUri,
+          value: appRepository.repositoryUri,
         },
       },
     });
-    props.repository.grantPullPush(dockerBuild);
+    appRepository.grantPullPush(dockerBuild);
+
+    const cdkBuild = new codebuild.PipelineProject(this, 'CdkBuild', {
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.STANDARD_6_0
+      },
+      buildSpec: codebuild.BuildSpec.fromSourceFilename(path.join(__dirname, './buildspec_cdk_build.yml')),
+    })
+    cdkBuild.addToRolePolicy(new iam.PolicyStatement(
+      {
+        effect: iam.Effect.ALLOW,
+        actions: ['ec2:DescribeAvailabilityZones'],
+        resources: ['*']
+      })
+    )
 
     const preDeploy = new codebuild.PipelineProject(this, 'PreDeploy', {
       cache: codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
       buildSpec: codebuild.BuildSpec.fromSourceFilename(path.join(__dirname, './buildspec_predeploy.yml')),
       environmentVariables: {
         APP_REPOSITORY_URI: {
-          value: props.repository.repositoryUri,
+          value: appRepository.repositoryUri,
         },
       },
       vpc: props.vpc
     });
-    props.repository.grantPull(preDeploy)
+    appRepository.grantPull(preDeploy)
     props.dbInstance.grantConnect(preDeploy)
 
     const dockerBuildOutput = new codepipeline.Artifact("DockerBuildOutput");
+    const cdkBuildOutput = new codepipeline.Artifact("CdkBuildOutput");
     const dockerBuildAction = new codepipeline_actions.CodeBuildAction({
       actionName: 'DockerBuild',
       project: dockerBuild,
@@ -87,7 +102,15 @@ export class DevPipelineStack extends cdk.Stack {
         },
         {
           stageName: 'Build',
-          actions: [dockerBuildAction]
+          actions: [
+            dockerBuildAction,
+            new codepipeline_actions.CodeBuildAction({
+              actionName: 'CdkBuild',
+              project: cdkBuild,
+              input: sourceOutput,
+              outputs: [cdkBuildOutput],
+            })
+          ]
         },
         {
           stageName: 'Deploy',
@@ -101,10 +124,15 @@ export class DevPipelineStack extends cdk.Stack {
               },
               runOrder: 1,
             }),
-            new codepipeline_actions.EcsDeployAction({
-              actionName: 'EcsDeploy',
-              service: props.service,
-              input: dockerBuildOutput,
+            new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+              actionName: 'CFN_Deploy',
+              stackName: 'DevAppStack',
+              templatePath: cdkBuildOutput.atPath('DevAppStack.template.json'),
+              adminPermissions: true,
+              parameterOverrides: {
+                [this.appBuiltImage.tagParameterName]: dockerBuildAction.variable('IMAGE_TAG'),
+              },
+              // extraInputs: [dockerBuildOutput], // need?
               runOrder: 2,
             })
           ],

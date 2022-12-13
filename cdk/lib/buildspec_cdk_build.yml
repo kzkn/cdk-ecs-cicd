@@ -1,0 +1,14 @@
+---
+version: '0.2'
+phases:
+  install:
+    commands:
+      - cd cdk
+      - npm ci
+  build:
+    commands:
+      - npx cdk synth -o . DevAppStack
+artifacts:
+  base-directory: cdk
+  files:
+    - DevAppStack.template.json

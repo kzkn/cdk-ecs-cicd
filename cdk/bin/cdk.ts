@@ -3,6 +3,7 @@ import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { ClusterStack } from '../lib/cluster-stack';
 import { AppStack } from '../lib/app-stack';
+import { DatabaseStack } from '../lib/database-stack';
 import { DevPipelineStack } from '../lib/dev-pipeline-stack';
 import { StagingProdPipelineStack } from '../lib/staging-prod-pipeline-stack';
 
@@ -21,23 +22,26 @@ cdk.Tags.of(devClusterStack).add('environment', 'dev');
 // });
 // cdk.Tags.of(prodClusterStack).add('environment', 'prod');
 
-// DevAppStack
-const devAppStack = new AppStack(app, 'DevAppStack', {
+// DevDatabaseStack
+const devDatabaseStack = new DatabaseStack(app, 'DevDatabaseStack', {
   vpc: devClusterStack.vpc,
-  cluster: devClusterStack.cluster,
-  //autoDeploy: false,
-  // appImage: devPipelineStack.appBuiltImage
 });
-cdk.Tags.of(devAppStack).add('environment', 'dev');
+cdk.Tags.of(devDatabaseStack).add('environment', 'dev');
 
 // CodePipeline stacks
 const devPipelineStack = new DevPipelineStack(app, 'DevPipelineStack', {
   vpc: devClusterStack.vpc,
-  dbInstance: devAppStack.dbInstance,
-  repository: devAppStack.repository,
-  service: devAppStack.service,
+  dbInstance: devDatabaseStack.dbInstance,
 });
 cdk.Tags.of(devPipelineStack).add('environment', 'dev');
+
+// DevAppStack
+const devAppStack = new AppStack(app, 'DevAppStack', {
+  dbInstance: devDatabaseStack.dbInstance,
+  cluster: devClusterStack.cluster,
+  appImage: devPipelineStack.appBuiltImage
+});
+cdk.Tags.of(devAppStack).add('environment', 'dev');
 
 
 // const stagingProdPipelineStack = new StagingProdPipelineStack(app, 'StagingProdPipelineStack', {
