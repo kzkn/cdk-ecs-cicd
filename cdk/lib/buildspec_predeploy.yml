@@ -1,6 +1,9 @@
 ---
 version: '0.2'
 phases:
+  pre_build:
+    commands:
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
   build:
     commands:
-      - docker run $APP_REPOSITORY_URI:$IMAGE_TAG bin/rails app:release
+      - docker run --rm $APP_REPOSITORY_URI:$IMAGE_TAG bin/rails app:release
