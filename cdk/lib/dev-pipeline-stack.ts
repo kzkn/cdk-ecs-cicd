@@ -117,7 +117,7 @@ export class DevPipelineStack extends cdk.Stack {
             new codepipeline_actions.CodeBuildAction({
               actionName: 'PreDeploy',
               project: preDeploy,
-              input: dockerBuildOutput,
+              input: sourceOutput,
               environmentVariables: {
                 IMAGE_TAG: { value: dockerBuildAction.variable('IMAGE_TAG') }
               },
