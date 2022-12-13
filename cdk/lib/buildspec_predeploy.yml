@@ -1,0 +1,6 @@
+---
+version: '0.2'
+phases:
+  build:
+    commands:
+      - docker run $APP_REPOSITORY_URI:$IMAGE_TAG bin/rails app:release

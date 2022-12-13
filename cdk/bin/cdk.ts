@@ -15,15 +15,27 @@ const devClusterStack = new ClusterStack(app, 'DevCluster', {
 });
 cdk.Tags.of(devClusterStack).add('environment', 'dev');
 
-const prodClusterStack = new ClusterStack(app, 'ProdCluster', {
-  ipAddresses: '10.3.0.0/20',
-  maxAZs: 2
+// const prodClusterStack = new ClusterStack(app, 'ProdCluster', {
+//   ipAddresses: '10.3.0.0/20',
+//   maxAZs: 2
+// });
+// cdk.Tags.of(prodClusterStack).add('environment', 'prod');
+
+// DevAppStack
+const devAppStack = new AppStack(app, 'DevAppStack', {
+  vpc: devClusterStack.vpc,
+  cluster: devClusterStack.cluster,
+  //autoDeploy: false,
+  // appImage: devPipelineStack.appBuiltImage
 });
-cdk.Tags.of(prodClusterStack).add('environment', 'prod');
+cdk.Tags.of(devAppStack).add('environment', 'dev');
 
 // CodePipeline stacks
 const devPipelineStack = new DevPipelineStack(app, 'DevPipelineStack', {
-  vpc: devClusterStack.vpc
+  vpc: devClusterStack.vpc,
+  dbInstance: devAppStack.dbInstance,
+  repository: devAppStack.repository,
+  service: devAppStack.service,
 });
 cdk.Tags.of(devPipelineStack).add('environment', 'dev');
 
@@ -34,15 +46,6 @@ cdk.Tags.of(devPipelineStack).add('environment', 'dev');
 //     imageTag: devPipelineStack.imageTag
 // });
 // cdk.Tags.of(stagingProdPipelineStack).add('environment', 'prod');
-
-// DevAppStack
-const devAppStack = new AppStack(app, 'DevAppStack', {
-  vpc: devClusterStack.vpc,
-  cluster: devClusterStack.cluster,
-  //autoDeploy: false,
-  appImage: devPipelineStack.appBuiltImage
-});
-cdk.Tags.of(devAppStack).add('environment', 'dev');
 
 // StagingAppStack
 // const stagingAppStack = new AppStack(app, 'StagingAppStack', {

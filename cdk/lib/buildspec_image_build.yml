@@ -1,0 +1,20 @@
+---
+version: '0.2'
+phases:
+  pre_build:
+    commands:
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+  build:
+    commands:
+      - export IMAGE_TAG=$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - DOCKER_BUILDKIT=1 docker build -t $APP_REPOSITORY_URI:$IMAGE_TAG app
+  post_build:
+    commands:
+      - docker push $APP_REPOSITORY_URI:$IMAGE_TAG
+      - printf '[{"name":"app","imageUri":"%s"}]' $APP_REPOSITORY_URI:$IMAGE_TAG >imagedefinitions.json
+artifacts:
+  files:
+    - imagedefinitions.json
+env:
+  exported-variables:
+    - IMAGE_TAG
