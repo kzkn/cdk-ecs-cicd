@@ -69,9 +69,9 @@ export class DevPipelineStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
         actions: ['ec2:DescribeAvailabilityZones'],
         resources: ['*']
-      })
-    )
+      }))
 
+    const dbCredential = props.dbInstance.secret!
     const preDeploy = new codebuild.PipelineProject(this, 'PreDeploy', {
       environment: {
         privileged: true,
@@ -82,6 +82,17 @@ export class DevPipelineStack extends cdk.Stack {
         APP_REPOSITORY_URI: {
           value: appRepository.repositoryUri,
         },
+        DATABASE_HOST: {
+          value: props.dbInstance.dbInstanceEndpointAddress
+        },
+        DATABASE_USERNAME: {
+          type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER,
+          value: `${dbCredential.secretName}:username`
+        },
+        DATABASE_PASSWORD: {
+          type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER,
+          value: `${dbCredential.secretName}:password`
+        }
       },
       vpc: props.vpc
     });
