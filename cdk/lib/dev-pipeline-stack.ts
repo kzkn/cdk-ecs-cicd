@@ -87,17 +87,18 @@ export class DevPipelineStack extends cdk.Stack {
         },
         DATABASE_USERNAME: {
           type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER,
-          value: `${dbCredential.secretName}:username`
+          value: `${dbCredential.secretArn}:username`
         },
         DATABASE_PASSWORD: {
           type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER,
-          value: `${dbCredential.secretName}:password`
+          value: `${dbCredential.secretArn}:password`
         }
       },
       vpc: props.vpc
     });
     appRepository.grantPull(preDeploy)
     props.dbInstance.grantConnect(preDeploy)
+    dbCredential.grantRead(preDeploy)
 
     const dockerBuildOutput = new codepipeline.Artifact("DockerBuildOutput");
     const cdkBuildOutput = new codepipeline.Artifact("CdkBuildOutput");
