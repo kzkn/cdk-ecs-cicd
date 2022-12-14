@@ -6,4 +6,4 @@ phases:
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
   build:
     commands:
-      - docker run --rm $APP_REPOSITORY_URI:$IMAGE_TAG bin/rails app:release -e "DATABASE_HOST=$DATABASE_HOST" -e "DATABASE_USERNAME=$DATABASE_USERNAME" -e "DATABASE_PASSWORD=$DATABASE_PASSWORD"
+      - docker run --rm $APP_REPOSITORY_URI:$IMAGE_TAG bin/rails app:release -e "DATABASE_HOST='$DATABASE_HOST'" -e "DATABASE_USERNAME='$DATABASE_USERNAME'" -e "DATABASE_PASSWORD='$DATABASE_PASSWORD'"
