@@ -23,12 +23,8 @@ export class AppStack extends cdk.Stack {
       cluster: props.cluster,
       taskImageOptions: {
         image: props.appImage,
-        environment: {
-          DATABASE_HOST: props.dbInstance.dbInstanceEndpointAddress
-        },
         secrets: {
-          DATABASE_USERNAME: ecs.Secret.fromSecretsManager(dbCredential, 'username'),
-          DATABASE_PASSWORD: ecs.Secret.fromSecretsManager(dbCredential, 'password'),
+          DATABASE_CREDENTIALS: ecs.Secret.fromSecretsManager(dbCredential),
         },
       },
       cpu: 256,

@@ -1,5 +1,11 @@
 require_relative "boot"
 
+database_credentials = ENV['DATABASE_CREDENTIALS']
+if database_credentials
+  db = JSON.parse(database_credentials)
+  ENV['DATABASE_URL'] = "postgres://#{db['username']}:#{db['password']}@#{db['host']}:#{db['port']}/#{db['dbname']}"
+end
+
 require "rails"
 # Pick the frameworks you want:
 require "active_model/railtie"

@@ -82,17 +82,10 @@ export class DevPipelineStack extends cdk.Stack {
         APP_REPOSITORY_URI: {
           value: appRepository.repositoryUri,
         },
-        DATABASE_HOST: {
-          value: props.dbInstance.dbInstanceEndpointAddress
-        },
-        DATABASE_USERNAME: {
+        DATABASE_CREDENTIALS: {
           type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER,
-          value: `${dbCredential.secretArn}:username`
+          value: dbCredential.secretName
         },
-        DATABASE_PASSWORD: {
-          type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER,
-          value: `${dbCredential.secretArn}:password`
-        }
       },
       vpc: props.vpc
     });
