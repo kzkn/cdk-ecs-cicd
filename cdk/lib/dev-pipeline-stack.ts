@@ -14,20 +14,13 @@ import { githubOwner, repoName, awsSecretsGitHubTokenName, gitDevBranch } from '
 export interface DevPipelineStackProps extends cdk.StackProps {
   vpc: ec2.Vpc;
   dbInstance: rds.DatabaseInstance;
-  // repository: ecr.IRepository;
-  // service: ecs.FargateService;
 }
 
 export class DevPipelineStack extends cdk.Stack {
-  // public readonly appRepository: ecr.Repository;
   public readonly appBuiltImage: ecs.TagParameterContainerImage;
-  // public readonly imageTag: string;
 
   constructor(scope: Construct, id: string, props: DevPipelineStackProps) {
-    super(scope, id, {
-      ...props,
-      //autoDeploy: false,
-    });
+    super(scope, id, props)
 
     const appRepository = new ecr.Repository(this, 'AppEcrRepo');
     this.appBuiltImage = new ecs.TagParameterContainerImage(appRepository);
@@ -140,7 +133,6 @@ export class DevPipelineStack extends cdk.Stack {
               parameterOverrides: {
                 [this.appBuiltImage.tagParameterName]: dockerBuildAction.variable('IMAGE_TAG'),
               },
-              // extraInputs: [dockerBuildOutput], // need?
               runOrder: 2,
             })
           ],
