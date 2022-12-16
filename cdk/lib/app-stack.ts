@@ -25,7 +25,10 @@ export class AppStack extends cdk.Stack {
       },
       cpu: 256,
       memoryLimitMiB: 512,
-      enableExecuteCommand: true
+      enableExecuteCommand: true,
+      runtimePlatform: {
+        cpuArchitecture: ecs.CpuArchitecture.ARM64
+      }
     })
 
     const service = albService.service
