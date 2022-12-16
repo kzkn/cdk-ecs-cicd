@@ -97,6 +97,13 @@ RUN --mount=type=cache,id=prod-apt-cache,sharing=locked,target=/var/cache/apt \
     ${DEPLOY_PACKAGES} \
     && rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
+# SSM
+RUN mkdir /tmp/ssm && \
+    curl https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb -o /tmp/ssm/amazon-ssm-agent.deb && \
+    dpkg -i /tmp/ssm/amazon-ssm-agent.deb && \
+    cp /etc/amazon/ssm/seelog.xml.template /etc/amazon/ssm/seelog.xml && \
+    rm -rf /tmp/ssm
+
 # copy installed gems
 COPY --from=gems /app /app
 COPY --from=gems /usr/lib/fullstaq-ruby/versions /usr/lib/fullstaq-ruby/versions
@@ -129,3 +136,4 @@ RUN ${BUILD_COMMAND}
 # Default server start instructions.  Generally Overridden by fly.toml.
 ENV PORT 80
 CMD ["bin/rails", "app:server"]
+ENTRYPOINT ["entrypoint.sh"]
