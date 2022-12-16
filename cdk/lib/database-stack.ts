@@ -20,6 +20,7 @@ export class DatabaseStack extends cdk.Stack {
       engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_14_4 }),
       credentials: rds.Credentials.fromSecret(dbCreds),
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.MICRO),
+      databaseName: 'app',
       vpc: props.vpc,
     })
     this.dbInstance = dbInstance
