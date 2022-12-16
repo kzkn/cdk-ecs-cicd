@@ -8,6 +8,7 @@ phases:
   build:
     commands:
       - npx cdk synth -o . DevAppStack
+      - npx cdk synth -o . DevBastionStack
 artifacts:
   base-directory: cdk
   files:

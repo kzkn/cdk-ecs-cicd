@@ -128,9 +128,19 @@ export class DevPipelineStack extends cdk.Stack {
               runOrder: 1,
             }),
             new codepipeline_actions.CloudFormationCreateUpdateStackAction({
-              actionName: 'CFN_Deploy',
+              actionName: 'CFN_Deploy_App',
               stackName: 'DevAppStack',
               templatePath: cdkBuildOutput.atPath('DevAppStack.template.json'),
+              adminPermissions: true,
+              parameterOverrides: {
+                [this.appBuiltImage.tagParameterName]: dockerBuildAction.variable('IMAGE_TAG'),
+              },
+              runOrder: 2,
+            }),
+            new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+              actionName: 'CFN_Deploy_Bastion',
+              stackName: 'DevBastionStack',
+              templatePath: cdkBuildOutput.atPath('DevBastionStack.template.json'),
               adminPermissions: true,
               parameterOverrides: {
                 [this.appBuiltImage.tagParameterName]: dockerBuildAction.variable('IMAGE_TAG'),
