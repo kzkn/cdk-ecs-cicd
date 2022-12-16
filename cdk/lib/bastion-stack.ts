@@ -16,10 +16,7 @@ export class BastionStack extends cdk.Stack {
     const activationId = ssm.StringParameter.fromStringParameterName(this, 'ActivationId', 'bastion-activation-id')
     const taskDef = new ecs.FargateTaskDefinition(this, 'TaskDef', {
       cpu: 256,
-      memoryLimitMiB: 512,
-      runtimePlatform: {
-        cpuArchitecture: ecs.CpuArchitecture.ARM64
-      }
+      memoryLimitMiB: 512
     })
     taskDef.addContainer('bastion', {
       image: props.appImage,
