@@ -14,7 +14,6 @@ export class DatabaseStack extends cdk.Stack {
     super(scope, id, props);
 
     const dbCreds = new rds.DatabaseSecret(this, 'DatabaseCredentials', {
-      secretName: 'rds-credentials',
       username: 'postgres',
     })
     const dbInstance = new rds.DatabaseInstance(this, 'Database', {
