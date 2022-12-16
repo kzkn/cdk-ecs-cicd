@@ -77,7 +77,7 @@ export class DevPipelineStack extends cdk.Stack {
         },
         DATABASE_CREDENTIALS: {
           type: codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER,
-          value: dbCredential.secretName
+          value: dbCredential.secretArn
         },
       },
       vpc: props.vpc
