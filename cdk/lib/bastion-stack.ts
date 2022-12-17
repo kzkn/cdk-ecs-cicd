@@ -59,7 +59,10 @@ export class BastionStack extends cdk.Stack {
 
     taskDef.addContainer('bastion', {
       image: props.appImage,
-      command: ['sleep', '3600'],
+      command: ['sleep', '$DURATION'],
+      environment: {
+        DURATION: '3600'
+      },
       secrets: {
         SSM_ACTIVATION_CODE: ecs.Secret.fromSsmParameter(activationCode),
         SSM_ACTIVATION_ID: ecs.Secret.fromSsmParameter(activationId),
