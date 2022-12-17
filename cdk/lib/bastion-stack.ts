@@ -17,14 +17,23 @@ export class BastionStack extends cdk.Stack {
     const taskDef = new ecs.FargateTaskDefinition(this, 'TaskDef', {
       cpu: 256,
       memoryLimitMiB: 512,
+      taskRole: new iam.Role(this, 'TaskRole', {
+        assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+        inlinePolicies: {
+          'PassRole': new iam.PolicyDocument({
+            statements: [
+              new iam.PolicyStatement({
+                actions: ['iam:PassRole'],
+                resources: ['*'],
+                conditions: {
+                  StringEquals: { 'iam:PassedToService': 'ssm.amazonaws.com' }
+                }
+              })
+            ]
+          })
+        }
+      })
     })
-    taskDef.taskRole.addToPrincipalPolicy(new iam.PolicyStatement({
-      actions: ['iam:PassRole'],
-      resources: ['*'],
-      conditions: {
-        StringEquals: { "iam:PassedToService": "ssm.amazonaws.com" }
-      }
-    }))
 
     const dbCredential = props.dbInstance.secret!
     const ssmServiceRole = new iam.Role(this, 'SsmServiceRole', {
