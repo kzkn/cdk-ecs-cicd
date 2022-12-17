@@ -136,4 +136,4 @@ RUN ${BUILD_COMMAND}
 # Default server start instructions.  Generally Overridden by fly.toml.
 ENV PORT 80
 CMD ["bin/rails", "app:server"]
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
