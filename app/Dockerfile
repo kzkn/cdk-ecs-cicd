@@ -101,7 +101,8 @@ RUN --mount=type=cache,id=prod-apt-cache,sharing=locked,target=/var/cache/apt \
 RUN mkdir /tmp/ssm && \
     curl https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb -o /tmp/ssm/amazon-ssm-agent.deb && \
     dpkg -i /tmp/ssm/amazon-ssm-agent.deb && \
-    cp /etc/amazon/ssm/seelog.xml.template /etc/amazon/ssm/seelog.xml && \
+    mv /etc/amazon/ssm/amazon-ssm-agent.json.template /etc/amazon/ssm/amazon-ssm-agent.json && \
+    mv /etc/amazon/ssm/seelog.xml.template /etc/amazon/ssm/seelog.xml && \
     rm -rf /tmp/ssm
 
 # copy installed gems
