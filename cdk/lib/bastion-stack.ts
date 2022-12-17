@@ -17,7 +17,7 @@ export class BastionStack extends cdk.Stack {
     const taskDef = new ecs.FargateTaskDefinition(this, 'TaskDef', {
       cpu: 256,
       memoryLimitMiB: 512,
-      taskRole: new iam.Role(this, 'TaskRole', {
+      executionRole: new iam.Role(this, 'ExecutionRole', {
         assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
         inlinePolicies: {
           'PassRole': new iam.PolicyDocument({
