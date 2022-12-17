@@ -2,16 +2,19 @@ import { Construct } from 'constructs';
 import * as cdk from 'aws-cdk-lib';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as rds from 'aws-cdk-lib/aws-rds';
 
 export interface BastionStackProps extends cdk.StackProps {
   cluster: ecs.Cluster;
-  appImage: ecs.ContainerImage
+  dbInstance: rds.DatabaseInstance;
+  appImage: ecs.ContainerImage;
 }
 
 export class BastionStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BastionStackProps) {
     super(scope, id, props);
 
+    const dbCredential = props.dbInstance.secret!
     const activationCode = ssm.StringParameter.fromStringParameterName(this, 'ActivationCode', 'bastion-activation-code')
     const activationId = ssm.StringParameter.fromStringParameterName(this, 'ActivationId', 'bastion-activation-id')
     const taskDef = new ecs.FargateTaskDefinition(this, 'TaskDef', {
@@ -24,6 +27,7 @@ export class BastionStack extends cdk.Stack {
       secrets: {
         SSM_ACTIVATION_CODE: ecs.Secret.fromSsmParameter(activationCode),
         SSM_ACTIVATION_ID: ecs.Secret.fromSsmParameter(activationId),
+        DATABASE_CREDENTIALS: ecs.Secret.fromSecretsManager(dbCredential),
       }
     })
   }
