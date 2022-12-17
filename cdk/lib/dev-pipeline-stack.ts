@@ -71,7 +71,7 @@ export class DevPipelineStack extends cdk.Stack {
       environment: {
         privileged: true,
       },
-      cache: codebuild.Cache.local(codebuild.LocalCacheMode.CUSTOM),
+      cache: codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
       buildSpec: codebuild.BuildSpec.fromSourceFilename('./cdk/lib/buildspec_predeploy.yml'),
       environmentVariables: {
         APP_REPOSITORY_URI: {
