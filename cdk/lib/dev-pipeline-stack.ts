@@ -143,7 +143,7 @@ export class DevPipelineStack extends cdk.Stack {
               parameterOverrides: {
                 [this.appBuiltImage.tagParameterName]: dockerBuildAction.variable('IMAGE_TAG'),
               },
-              runOrder: 3,
+              runOrder: 2,
             })
           ],
         },
