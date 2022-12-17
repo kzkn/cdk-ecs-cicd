@@ -7,3 +7,6 @@ phases:
   build:
     commands:
       - docker run --rm $APP_REPOSITORY_URI:$IMAGE_TAG bin/rails app:release -e "DATABASE_CREDENTIALS=$DATABASE_CREDENTIALS"
+cache:
+  paths:
+    - /var/lib/docker/image
