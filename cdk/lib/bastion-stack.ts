@@ -20,16 +20,11 @@ export class BastionStack extends cdk.Stack {
     })
     taskDef.addContainer('bastion', {
       image: props.appImage,
+      command: ['amazon-ssm-agent'],
       secrets: {
         SSM_ACTIVATION_CODE: ecs.Secret.fromSsmParameter(activationCode),
         SSM_ACTIVATION_ID: ecs.Secret.fromSsmParameter(activationId),
       }
-    })
-
-    new ecs.FargateService(this, 'BastionService', {
-      cluster: props.cluster,
-      taskDefinition: taskDef,
-      desiredCount: 0
     })
   }
 }
