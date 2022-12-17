@@ -37,7 +37,7 @@ export class BastionStack extends cdk.Stack {
 
     const dbCredential = props.dbInstance.secret!
     const ssmServiceRole = new iam.Role(this, 'SsmServiceRole', {
-      assumedBy: new iam.ServicePrincipal('ssm.amazon.com')
+      assumedBy: new iam.ServicePrincipal('ssm.amazonaws.com')
     })
 
     taskDef.addContainer('bastion', {
