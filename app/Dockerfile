@@ -87,7 +87,7 @@ RUN yarn install
 
 FROM base
 
-ARG DEPLOY_PACKAGES="postgresql-client file vim curl gzip libsqlite3-0"
+ARG DEPLOY_PACKAGES="postgresql-client file vim curl gzip libsqlite3-0 jq awscli"
 ENV DEPLOY_PACKAGES=${DEPLOY_PACKAGES}
 
 RUN --mount=type=cache,id=prod-apt-cache,sharing=locked,target=/var/cache/apt \
