@@ -3,6 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import { LogDriver } from 'aws-cdk-lib/aws-ecs';
 
 export interface BastionStackProps extends cdk.StackProps {
   cluster: ecs.Cluster;
@@ -10,6 +11,7 @@ export interface BastionStackProps extends cdk.StackProps {
   appImage: ecs.ContainerImage;
 }
 
+// SEE: https://iselegant.hatenablog.com/entry/2020/09/28/012409
 export class BastionStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BastionStackProps) {
     super(scope, id, props);
@@ -34,6 +36,7 @@ export class BastionStack extends cdk.Stack {
     taskDef.addContainer('bastion', {
       image: props.appImage,
       command: ['amazon-ssm-agent'],
+      logging: LogDriver.awsLogs({ streamPrefix: 'bastion-' }),
       environment: {
         SSM_SERVICE_ROLE: ssmServiceRole.roleName
       },
