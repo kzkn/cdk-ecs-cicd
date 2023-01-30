@@ -33,6 +33,7 @@ export class BastionStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('ssm.amazonaws.com')
     })
 
+    // TODO: bastion タスクに public ip を assign しないと起動しないのを改善したい
     taskDef.addContainer('bastion', {
       image: props.appImage,
       command: ['amazon-ssm-agent'],
