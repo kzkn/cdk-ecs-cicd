@@ -15,6 +15,7 @@ export class DatabaseStack extends cdk.Stack {
 
     const dbCreds = new rds.DatabaseSecret(this, 'DatabaseCredentials', {
       username: 'postgres',
+      excludeCharacters: "=^,-. %+~`#$&*()|[]{}:;<>?!'/@\"\\"
     })
     const dbInstance = new rds.DatabaseInstance(this, 'Database', {
       engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_14_4 }),
