@@ -20,7 +20,7 @@ export class BastionStack extends cdk.Stack {
       cpu: 256,
       memoryLimitMiB: 512,
     })
-    taskDef.addToExecutionRolePolicy(new iam.PolicyStatement({
+    taskDef.addToTaskRolePolicy(new iam.PolicyStatement({
       actions: ['iam:PassRole'],
       resources: ['*'],
       conditions: {
