@@ -41,6 +41,7 @@ export class DevPipelineStack extends cdk.Stack {
     const dockerBuild = new codebuild.PipelineProject(this, 'DockerBuild', {
       environment: {
         privileged: true,
+        buildImage: codebuild.LinuxBuildImage.STANDARD_6_0
       },
       cache: codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
       buildSpec: codebuild.BuildSpec.fromSourceFilename('./cdk/lib/buildspec_image_build.yml'),
@@ -70,6 +71,7 @@ export class DevPipelineStack extends cdk.Stack {
     const preDeploy = new codebuild.PipelineProject(this, 'PreDeploy', {
       environment: {
         privileged: true,
+        buildImage: codebuild.LinuxBuildImage.STANDARD_6_0
       },
       cache: codebuild.Cache.local(codebuild.LocalCacheMode.DOCKER_LAYER),
       buildSpec: codebuild.BuildSpec.fromSourceFilename('./cdk/lib/buildspec_predeploy.yml'),
