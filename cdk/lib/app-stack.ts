@@ -47,7 +47,7 @@ export class AppStack extends cdk.Stack {
     })
     workerTaskDef.addContainer('worker', {
       image: props.workerImage,
-      command: ["bin/delayed_job", "start"],
+      command: ["bin/delayed_job", "run"],
       logging: ecs.LogDriver.awsLogs({ streamPrefix: 'worker-' }),
       secrets: {
         DATABASE_CREDENTIALS: ecs.Secret.fromSecretsManager(dbCredential),
