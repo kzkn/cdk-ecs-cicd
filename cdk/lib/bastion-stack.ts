@@ -20,8 +20,6 @@ export class BastionStack extends cdk.Stack {
       cpu: 256,
       memoryLimitMiB: 512,
     })
-    // An error occurred (AccessDeniedException) when calling the CreateActivation operation: User: arn:aws:sts::826145371799:assumed-role/DevBastionStack-TaskDefTaskRole1EDB4A67-1IQH9ORNNV2MZ/a4ef06e8bdf44456872f2bd4a1cd044a is not authorized to perform: ssm:CreateActivation on resource: arn:aws:iam::826145371799:role/DevBastionStack-SsmServiceRole30DCFE5E-8I2PFHYH4AYW because no identity-based policy allows the ssm:CreateActivation action
-    // Attach Managed Policy: AmazonSSMFullAccess
     taskDef.addToTaskRolePolicy(new iam.PolicyStatement({
       actions: ['iam:PassRole'],
       resources: ['*'],
@@ -32,23 +30,6 @@ export class BastionStack extends cdk.Stack {
     taskDef.taskRole.addManagedPolicy({ managedPolicyArn: 'arn:aws:iam::aws:policy/AmazonSSMFullAccess' })
 
     const dbCredential = props.dbInstance.secret!
-    // aws iam attach-role-policy \
-    // --role-name SSMServiceRole \
-    // --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore  
-// {
-//     "Version": "2012-10-17",
-//     "Statement": [
-//         {
-//             "Effect": "Allow",
-//             "Action": [
-//                 "ssm:CreateActivation"
-//             ],
-//             "Resource": "*"
-//         }
-//     ]
-// }
-
-    // Attach Managed Policy: AmazonSSMManagedInstanceCore
     const ssmServiceRole = new iam.Role(this, 'SsmServiceRole', {
       assumedBy: new iam.ServicePrincipal('ssm.amazonaws.com'),
       managedPolicies: [
@@ -57,6 +38,7 @@ export class BastionStack extends cdk.Stack {
     })
 
     // TODO: bastion タスクに public ip を assign しないと起動しないのを改善したい
+    // TODO: タスク起動時に指定する既定の security group などの各種パラメータを前もって設定できないか
     taskDef.addContainer('bastion', {
       image: props.appImage,
       command: ['amazon-ssm-agent'],
