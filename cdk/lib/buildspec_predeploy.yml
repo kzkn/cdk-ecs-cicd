@@ -3,7 +3,8 @@ version: '0.2'
 phases:
   pre_build:
     commands:
-      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+      - AWS_ACCOUNT_ID=`echo $CODEBUILD_BUILD_ARN | cut -f 5 -d :`
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
   build:
     commands:
       - docker run --rm $APP_REPOSITORY_URI:$IMAGE_TAG bin/rails app:release -e "DATABASE_CREDENTIALS=$DATABASE_CREDENTIALS"
