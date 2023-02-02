@@ -25,7 +25,6 @@ export class AppStack extends cdk.Stack {
       },
       cpu: 256,
       memoryLimitMiB: 512,
-      enableExecuteCommand: true
     })
 
     const service = albService.service
@@ -40,5 +39,23 @@ export class AppStack extends cdk.Stack {
 
     const targetGroup = albService.targetGroup
     targetGroup.setAttribute('deregistration_delay.timeout_seconds', '10')
+
+    const workerTaskDef = new ecs.FargateTaskDefinition(this, 'WorkerTaskDef', {
+      cpu: 256,
+      memoryLimitMiB: 512,
+    })
+    workerTaskDef.addContainer('worker', {
+      image: props.appImage,
+      command: ["bin/delayed_job", "start"],
+      logging: ecs.LogDriver.awsLogs({ streamPrefix: 'worker-' }),
+      secrets: {
+        DATABASE_CREDENTIALS: ecs.Secret.fromSecretsManager(dbCredential),
+      },
+    })
+    const workerService = new ecs.FargateService(this, 'Worker', {
+      cluster: props.cluster,
+      taskDefinition: workerTaskDef,
+    })
+    workerService.connections.allowToDefaultPort(props.dbInstance)
   }
 }
