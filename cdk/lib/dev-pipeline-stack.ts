@@ -49,9 +49,6 @@ export class DevPipelineStack extends cdk.Stack {
         'APP_REPOSITORY_URI': {
           value: appRepository.repositoryUri,
         },
-        'AWS_ACCOUNT_ID': {
-          value: props?.env?.account || ''
-        },
       },
     });
     appRepository.grantPullPush(dockerBuild);
