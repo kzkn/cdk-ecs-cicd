@@ -8,6 +8,7 @@ export interface AppStackProps extends cdk.StackProps {
   cluster: ecs.Cluster;
   dbInstance: rds.DatabaseInstance;
   appImage: ecs.ContainerImage
+  workerImage: ecs.ContainerImage
 }
 
 export class AppStack extends cdk.Stack {
@@ -45,7 +46,7 @@ export class AppStack extends cdk.Stack {
       memoryLimitMiB: 512,
     })
     workerTaskDef.addContainer('worker', {
-      image: props.appImage,
+      image: props.workerImage,
       command: ["bin/delayed_job", "start"],
       logging: ecs.LogDriver.awsLogs({ streamPrefix: 'worker-' }),
       secrets: {

@@ -40,7 +40,8 @@ cdk.Tags.of(devPipelineStack).add('environment', 'dev');
 const devAppStack = new AppStack(app, 'DevAppStack', {
   dbInstance: devDatabaseStack.dbInstance,
   cluster: devClusterStack.cluster,
-  appImage: devPipelineStack.appBuiltImage
+  appImage: devPipelineStack.appBuiltImage,
+  workerImage: devPipelineStack.workerBuiltImage
 });
 cdk.Tags.of(devAppStack).add('environment', 'dev');
 

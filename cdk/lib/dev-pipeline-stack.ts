@@ -18,6 +18,7 @@ export interface DevPipelineStackProps extends cdk.StackProps {
 
 export class DevPipelineStack extends cdk.Stack {
   public readonly appBuiltImage: ecs.TagParameterContainerImage;
+  public readonly workerBuiltImage: ecs.TagParameterContainerImage;
   public readonly bastionBuiltImage: ecs.TagParameterContainerImage;
 
   constructor(scope: Construct, id: string, props: DevPipelineStackProps) {
@@ -25,6 +26,7 @@ export class DevPipelineStack extends cdk.Stack {
 
     const appRepository = new ecr.Repository(this, 'AppEcrRepo');
     this.appBuiltImage = new ecs.TagParameterContainerImage(appRepository);
+    this.workerBuiltImage = new ecs.TagParameterContainerImage(appRepository);
     this.bastionBuiltImage = new ecs.TagParameterContainerImage(appRepository);
 
     const sourceOutput = new codepipeline.Artifact();
@@ -136,6 +138,7 @@ export class DevPipelineStack extends cdk.Stack {
               adminPermissions: true,
               parameterOverrides: {
                 [this.appBuiltImage.tagParameterName]: dockerBuildAction.variable('IMAGE_TAG'),
+                [this.workerBuiltImage.tagParameterName]: dockerBuildAction.variable('IMAGE_TAG'),
               },
               runOrder: 2,
             }),
